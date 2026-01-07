@@ -1,4 +1,7 @@
 Instruction to setup
+Clone the Repository
+git clone https://github.com/alok9973/smart-pay.git
+
 ```
 cd smart-pay
 ```
