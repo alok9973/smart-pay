@@ -101,8 +101,9 @@ def check_balance(request: WalletRequest):
 # --------------------------
 # TRANSACTION HISTORY: Get transactions for a user
 # --------------------------
-@app.post("/wallet/transaction-history")
+@app.post("/transaction-history")
 def get_transaction_history(request: TransactionHistoryRequest):
+    """Get all transactions for authenticated user"""
     user = walletdata["users"].get(request.user_id)
 
     if not user:
@@ -114,37 +115,11 @@ def get_transaction_history(request: TransactionHistoryRequest):
             "message": "Please authenticate first"
         }
 
-    # Filter transactions if specific mobile number is provided
+    # Get transactions directly from user data
     transactions = user.get("transactions", [])
-    
-    if request.mobile_number:
-        if not check_valid_mobile_number(request.mobile_number):
-            return {
-                "success": False,
-                "message": "Invalid mobile number format"
-            }
-        
-        # Filter transactions with this specific number
-        recipient_user_id, _ = find_user_by_phone(request.mobile_number)
-        if not recipient_user_id:
-            return {
-                "success": False,
-                "message": f"No user found with mobile number {request.mobile_number}"
-            }
-        
-        transactions = [
-            txn for txn in transactions 
-            if txn.get("to_user") == recipient_user_id or txn.get("from_user") == recipient_user_id
-        ]
 
-    return {
-        "success": True,
-        "user_id": request.user_id,
-        "mobile_number": user["phone"],
-        "transactions": transactions,
-        "total_balance": user["wallet"]["balance"],
-        "total_transactions": len(transactions)
-    }
+    return transactions
+
 
 # --------------------------
 # BANK: Link Bank Account
