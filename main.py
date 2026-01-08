@@ -417,7 +417,7 @@ def get_linked_banks(request: WalletRequest):
 
     if not linked_banks:
         return {
-            "success": True,
+            "success": False,
             "message": "No banks linked",
             "linked_banks": [],
             "count": 0

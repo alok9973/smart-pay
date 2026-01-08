@@ -26,7 +26,7 @@ walletdata = {
             "is_authenticated": False,
             "wallet": {
                 "wallet_id": "W1001",
-                "balance": 524.00
+                "balance": 5204.00
             },
             "linked_banks": [
                 {
@@ -74,7 +74,7 @@ walletdata = {
                 {
                     "transaction_id": "TXN002",
                     "type": "CREDIT",
-                    "amount": 1000.00,
+                    "amount": 1030.00,
                     "from_user": "self",
                     "to_user": "U1002",
                     "description": "Initial wallet credit",
