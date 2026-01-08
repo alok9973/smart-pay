@@ -7,6 +7,8 @@ from models import (
 from data import walletdata
 from datetime import datetime
 import uuid
+from pydantic import BaseModel
+from typing import List, Optional
 
 app = FastAPI(title="SmartPay Agent API")
 
@@ -446,6 +448,85 @@ def get_linked_banks(request: WalletRequest):
 # --------------------------
 # Health Check
 # --------------------------
+# --------------------------
+# MOBILE RECHARGE: Hard-coded plans + simple recharge
+# --------------------------
+
+# Simple request model for recharge
+class SimpleRechargeRequest(BaseModel):
+    user_id: str
+    mobile_number: str
+    plan_id: str
+
+# Hard-coded sample plans (duration in days, data per day, price INR)
+PLANS: List[dict] = [
+    {"plan_id": "PL28A", "duration_days": 28, "data_per_day": "1.5GB/day", "price": 199.0, "description": "Daily 1.5GB for 28 days"},
+    {"plan_id": "PL28B", "duration_days": 28, "data_per_day": "2GB/day",   "price": 249.0, "description": "Daily 2GB for 28 days"},
+    {"plan_id": "PL56A", "duration_days": 56, "data_per_day": "1.5GB/day", "price": 399.0, "description": "Daily 1.5GB for 56 days"},
+    {"plan_id": "PL84A", "duration_days": 84, "data_per_day": "2GB/day",   "price": 599.0, "description": "Daily 2GB for 84 days"},
+]
+
+
+@app.get("/mobile/plans")
+def mobile_plans():
+    """Return the hard-coded recharge plans."""
+    return {"success": True, "plans": PLANS, "count": len(PLANS)}
+
+
+@app.post("/mobile/recharge")
+def mobile_recharge_simple(request: SimpleRechargeRequest):
+    # Validate mobile number
+    if not check_valid_mobile_number(request.mobile_number):
+        return {"success": False, "message": "Invalid mobile number"}
+
+    # Validate user
+    user = walletdata["users"].get(request.user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    if not user.get("is_authenticated"):
+        return {"success": False, "message": "Please authenticate first"}
+
+    # Find plan
+    plan = next((p for p in PLANS if p["plan_id"] == request.plan_id), None)
+    if not plan:
+        return {"success": False, "message": "Plan not found"}
+
+    price = plan["price"]
+
+    # Check balance
+    current_balance = user["wallet"]["balance"]
+    if current_balance < price:
+        return {"success": False, "message": "Insufficient balance to recharge", "current_balance": current_balance, "required": price}
+
+    # Deduct and record transaction
+    user["wallet"]["balance"] -= price
+    transaction_id = generate_transaction_id()
+    timestamp = get_current_timestamp()
+
+    tx = {
+        "transaction_id": transaction_id,
+        "type": "DEBIT",
+        "amount": price,
+        "from_user": request.user_id,
+        "to_user": "MOBILE_RECHARGE",
+        "description": f"Recharge {request.mobile_number} plan {plan['plan_id']}",
+        "timestamp": timestamp,
+        "status": "SUCCESS",
+    }
+
+    user.setdefault("transactions", []).append(tx)
+
+    return {
+        "success": True,
+        "message": f"Recharge successful for {request.mobile_number}",
+        "transaction_id": transaction_id,
+        "amount": price,
+        "new_balance": user["wallet"]["balance"],
+        "plan": plan,
+        "timestamp": timestamp,
+    }
+
 @app.get("/health")
 def health_check():
     return {"status": "SmartPay API is running", "timestamp": get_current_timestamp()}

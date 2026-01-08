@@ -26,7 +26,7 @@ walletdata = {
             "is_authenticated": False,
             "wallet": {
                 "wallet_id": "W1001",
-                "balance": 5204.00
+                "balance": 204.00
             },
             "linked_banks": [
                 {
