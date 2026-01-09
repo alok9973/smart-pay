@@ -201,7 +201,7 @@ def add_money_from_bank(request: AddMoneyFromBankRequest):
     linked_banks = user.get("linked_banks", [])
     bank_link = None
     for linked_bank in linked_banks:
-        if linked_bank["account_number"] == walletdata["bank_accounts"].get(request.bank_id, {}).get("account_number"):
+        if linked_bank["bank_id"] == request.bank_id:
             bank_link = linked_bank
             break
 
@@ -214,7 +214,7 @@ def add_money_from_bank(request: AddMoneyFromBankRequest):
     # Validate bank account has sufficient balance
     bank_account = None
     for acc in walletdata["bank_accounts"].values():
-        if acc["account_number"] == bank_link["account_number"]:
+        if acc["bank_id"] == request.bank_id and acc["account_number"] == bank_link["account_number"]:
             bank_account = acc
             break
 
@@ -249,7 +249,7 @@ def add_money_from_bank(request: AddMoneyFromBankRequest):
         "amount": request.amount,
         "from_user": "BANK",
         "to_user": request.user_id,
-        "description": f"Money added from bank account",
+        "description": f"Money added from {walletdata['banks'][request.bank_id]['bank_name']}",
         "timestamp": get_current_timestamp(),
         "status": "SUCCESS"
     }
