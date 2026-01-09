@@ -139,33 +139,33 @@ def link_bank_account(request: LinkBankRequest):
             "message": "Please authenticate first"
         }
 
-    # Validate bank exists
-    bank = walletdata["banks"].get(request.bank_id)
-    if not bank:
+    # Find `bank_id` by matching IFSC code (users don't provide bank_id)
+    bank_id = None
+    for bid, bank in walletdata["banks"].items():
+        if bank.get("ifsc_code") == request.ifsc_code:
+            bank_id = bid
+            break
+
+    if not bank_id:
         return {
             "success": False,
-            "message": f"Bank with ID {request.bank_id} not found"
+            "message": f"Invalid IFSC code. No bank found with IFSC {request.ifsc_code}"
         }
 
-    # Validate IFSC code matches bank
-    if bank["ifsc_code"] != request.ifsc_code:
-        return {
-            "success": False,
-            "message": f"IFSC code does not match bank. Expected: {bank['ifsc_code']}"
-        }
+    bank = walletdata["banks"].get(bank_id)
 
-    # Check if bank is already linked
+    # Check if account is already linked
     linked_banks = user.get("linked_banks", [])
     for linked_bank in linked_banks:
-        if linked_bank["bank_id"] == request.bank_id and linked_bank["account_number"] == request.account_number:
+        if linked_bank.get("account_number") == request.account_number and linked_bank.get("ifsc_code") == request.ifsc_code:
             return {
                 "success": False,
                 "message": "This bank account is already linked to your wallet"
             }
 
-    # Link the bank
+    # Link the bank (store bank_id internally)
     new_bank_link = {
-        "bank_id": request.bank_id,
+        "bank_id": bank_id,
         "account_number": request.account_number,
         "ifsc_code": request.ifsc_code,
         "account_holder_name": request.account_holder_name,
@@ -444,89 +444,3 @@ def get_linked_banks(request: WalletRequest):
         "linked_banks": enriched_banks,
         "count": len(enriched_banks)
     }
-
-# --------------------------
-# Health Check
-# --------------------------
-# --------------------------
-# MOBILE RECHARGE: Hard-coded plans + simple recharge
-# --------------------------
-
-# Simple request model for recharge
-class SimpleRechargeRequest(BaseModel):
-    user_id: str
-    mobile_number: str
-    plan_id: str
-
-# Hard-coded sample plans (duration in days, data per day, price INR)
-PLANS: List[dict] = [
-    {"plan_id": "PL28A", "duration_days": 28, "data_per_day": "1.5GB/day", "price": 199.0, "description": "Daily 1.5GB for 28 days"},
-    {"plan_id": "PL28B", "duration_days": 28, "data_per_day": "2GB/day",   "price": 249.0, "description": "Daily 2GB for 28 days"},
-    {"plan_id": "PL56A", "duration_days": 56, "data_per_day": "1.5GB/day", "price": 399.0, "description": "Daily 1.5GB for 56 days"},
-    {"plan_id": "PL84A", "duration_days": 84, "data_per_day": "2GB/day",   "price": 599.0, "description": "Daily 2GB for 84 days"},
-]
-
-
-@app.get("/mobile/plans")
-def mobile_plans():
-    """Return the hard-coded recharge plans."""
-    return {"success": True, "plans": PLANS, "count": len(PLANS)}
-
-
-@app.post("/mobile/recharge")
-def mobile_recharge_simple(request: SimpleRechargeRequest):
-    # Validate mobile number
-    if not check_valid_mobile_number(request.mobile_number):
-        return {"success": False, "message": "Invalid mobile number"}
-
-    # Validate user
-    user = walletdata["users"].get(request.user_id)
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
-
-    if not user.get("is_authenticated"):
-        return {"success": False, "message": "Please authenticate first"}
-
-    # Find plan
-    plan = next((p for p in PLANS if p["plan_id"] == request.plan_id), None)
-    if not plan:
-        return {"success": False, "message": "Plan not found"}
-
-    price = plan["price"]
-
-    # Check balance
-    current_balance = user["wallet"]["balance"]
-    if current_balance < price:
-        return {"success": False, "message": "Insufficient balance to recharge", "current_balance": current_balance, "required": price}
-
-    # Deduct and record transaction
-    user["wallet"]["balance"] -= price
-    transaction_id = generate_transaction_id()
-    timestamp = get_current_timestamp()
-
-    tx = {
-        "transaction_id": transaction_id,
-        "type": "DEBIT",
-        "amount": price,
-        "from_user": request.user_id,
-        "to_user": "MOBILE_RECHARGE",
-        "description": f"Recharge {request.mobile_number} plan {plan['plan_id']}",
-        "timestamp": timestamp,
-        "status": "SUCCESS",
-    }
-
-    user.setdefault("transactions", []).append(tx)
-
-    return {
-        "success": True,
-        "message": f"Recharge successful for {request.mobile_number}",
-        "transaction_id": transaction_id,
-        "amount": price,
-        "new_balance": user["wallet"]["balance"],
-        "plan": plan,
-        "timestamp": timestamp,
-    }
-
-@app.get("/health")
-def health_check():
-    return {"status": "SmartPay API is running", "timestamp": get_current_timestamp()}
