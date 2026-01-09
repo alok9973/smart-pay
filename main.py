@@ -139,6 +139,19 @@ def link_bank_account(request: LinkBankRequest):
             "message": "Please authenticate first"
         }
 
+    # Find bank_id by matching ifsc_code
+    bank_id = None
+    for bid, bank in walletdata["banks"].items():
+        if bank["ifsc_code"] == request.ifsc_code:
+            bank_id = bid
+            break
+    
+    if not bank_id:
+        return {
+            "success": False,
+            "message": f"Invalid IFSC code. No bank found with IFSC {request.ifsc_code}"
+        }
+
     # Check if account is already linked
     linked_banks = user.get("linked_banks", [])
     for linked_bank in linked_banks:
@@ -150,6 +163,7 @@ def link_bank_account(request: LinkBankRequest):
 
     # Link the bank
     new_bank_link = {
+        "bank_id": bank_id,
         "account_number": request.account_number,
         "ifsc_code": request.ifsc_code,
         "account_holder_name": request.account_holder_name,
@@ -165,6 +179,7 @@ def link_bank_account(request: LinkBankRequest):
     return {
         "success": True,
         "message": f"Bank account {request.account_number} linked successfully",
+        "bank_name": walletdata["banks"][bank_id]["bank_name"],
         "is_primary": new_bank_link["is_primary"]
     }
 
