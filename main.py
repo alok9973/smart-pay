@@ -139,23 +139,25 @@ def link_bank_account(request: LinkBankRequest):
             "message": "Please authenticate first"
         }
 
-    # Find bank_id by matching ifsc_code
-    bank_id = None
-    for bid, bank in walletdata["banks"].items():
-        if bank["ifsc_code"] == request.ifsc_code:
-            bank_id = bid
-            break
-    
-    if not bank_id:
+    # Validate bank exists
+    bank = walletdata["banks"].get(request.bank_id)
+    if not bank:
         return {
             "success": False,
-            "message": f"Invalid IFSC code. No bank found with IFSC {request.ifsc_code}"
+            "message": f"Bank with ID {request.bank_id} not found"
         }
 
-    # Check if account is already linked
+    # Validate IFSC code matches bank
+    if bank["ifsc_code"] != request.ifsc_code:
+        return {
+            "success": False,
+            "message": f"IFSC code does not match bank. Expected: {bank['ifsc_code']}"
+        }
+
+    # Check if bank is already linked
     linked_banks = user.get("linked_banks", [])
     for linked_bank in linked_banks:
-        if linked_bank["account_number"] == request.account_number and linked_bank["ifsc_code"] == request.ifsc_code:
+        if linked_bank["bank_id"] == request.bank_id and linked_bank["account_number"] == request.account_number:
             return {
                 "success": False,
                 "message": "This bank account is already linked to your wallet"
@@ -163,7 +165,7 @@ def link_bank_account(request: LinkBankRequest):
 
     # Link the bank
     new_bank_link = {
-        "bank_id": bank_id,
+        "bank_id": request.bank_id,
         "account_number": request.account_number,
         "ifsc_code": request.ifsc_code,
         "account_holder_name": request.account_holder_name,
@@ -179,7 +181,7 @@ def link_bank_account(request: LinkBankRequest):
     return {
         "success": True,
         "message": f"Bank account {request.account_number} linked successfully",
-        "bank_name": walletdata["banks"][bank_id]["bank_name"],
+        "bank_name": bank["bank_name"],
         "is_primary": new_bank_link["is_primary"]
     }
 
@@ -423,10 +425,13 @@ def get_linked_banks(request: WalletRequest):
             "count": 0
         }
 
-    # Prepare linked banks data
+    # Enrich with bank details
     enriched_banks = []
     for linked_bank in linked_banks:
+        bank = walletdata["banks"].get(linked_bank["bank_id"])
         enriched_banks.append({
+            "bank_id": linked_bank["bank_id"],
+            "bank_name": bank["bank_name"] if bank else "Unknown",
             "account_number": linked_bank["account_number"],
             "ifsc_code": linked_bank["ifsc_code"],
             "account_holder_name": linked_bank["account_holder_name"],
