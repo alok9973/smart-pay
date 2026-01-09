@@ -17,7 +17,6 @@ class TransactionHistoryRequest(BaseModel):
 
 class LinkBankRequest(BaseModel):
     user_id: str
-    bank_id: str
     account_number: str
     ifsc_code: str
     account_holder_name: str

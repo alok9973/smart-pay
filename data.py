@@ -30,7 +30,6 @@ walletdata = {
             },
             "linked_banks": [
                 {
-                    "bank_id": "BANK001",
                     "account_number": "1234567890123",
                     "ifsc_code": "SBIN0000123",
                     "account_holder_name": "Alok Kumar",
@@ -62,7 +61,6 @@ walletdata = {
             },
             "linked_banks": [
                 {
-                    "bank_id": "BANK002",
                     "account_number": "9876543210987",
                     "ifsc_code": "HDFC0000456",
                     "account_holder_name": "Drishti Singh",
@@ -120,7 +118,6 @@ walletdata = {
     "bank_accounts": {
         "ACC001": {
             "account_id": "ACC001",
-            "bank_id": "BANK001",
             "account_number": "1234567890123",
             "ifsc_code": "SBIN0000123",
             "account_holder_name": "Alok Kumar",
@@ -128,7 +125,6 @@ walletdata = {
         },
         "ACC002": {
             "account_id": "ACC002",
-            "bank_id": "BANK002",
             "account_number": "9876543210987",
             "ifsc_code": "HDFC0000456",
             "account_holder_name": "Drishti Singh",
@@ -136,7 +132,6 @@ walletdata = {
         },
         "ACC003": {
             "account_id": "ACC003",
-            "bank_id": "BANK003",
             "account_number": "5555666677778",
             "ifsc_code": "ICIC0000789",
             "account_holder_name": "Test User",
