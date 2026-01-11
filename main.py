@@ -600,10 +600,11 @@ def mobile_recharge(request: MobileRechargeRequest):
         "amount": plan_price,
         "from_user": request.user_id,
         "to_user": "RECHARGE_SERVICE",
-        "description": f"Mobile recharge on {request.phone_number} - {plan['plan_name']}",
+        "description": f"Mobile recharge on {request.phone_number} - {plan['duration']}",
         "phone_number": request.phone_number,
         "plan_id": request.plan_id,
         "validity_days": plan["validity_days"],
+        "data_per_day": plan["data_per_day"],
         "timestamp": timestamp,
         "status": "SUCCESS"
     }
@@ -612,14 +613,15 @@ def mobile_recharge(request: MobileRechargeRequest):
 
     return {
         "success": True,
-        "message": f"🎉 Congratulations! Your mobile recharge of ₹{plan_price} has been successfully completed! Your {plan['plan_name']} plan is now active for {plan['validity_days']} days.",
+        "message": f"🎉 Congratulations! Your mobile recharge of ₹{plan_price} has been successfully completed! Your {plan['duration']} plan is now active.",
         "celebration_message": "Great! Your mobile number has been recharged. Enjoy uninterrupted connectivity! 📱",
         "transaction_id": transaction_id,
         "phone_number": request.phone_number,
-        "plan_name": plan["plan_name"],
+        "plan_id": request.plan_id,
+        "duration": plan["duration"],
         "plan_price": plan_price,
         "validity_days": plan["validity_days"],
-        "plan_description": plan["description"],
+        "data_per_day": plan["data_per_day"],
         "new_balance": user["wallet"]["balance"],
         "timestamp": timestamp
     }
@@ -634,10 +636,10 @@ def get_recharge_plans():
     for plan_id, plan in walletdata["recharge_plans"].items():
         plans.append({
             "plan_id": plan_id,
-            "plan_name": plan["plan_name"],
+            "duration": plan["duration"],
             "price": plan["price"],
             "validity_days": plan["validity_days"],
-            "description": plan["description"]
+            "data_per_day": plan["data_per_day"]
         })
 
     return {

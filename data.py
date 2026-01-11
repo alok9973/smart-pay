@@ -144,47 +144,65 @@ walletdata = {
         }
     },
     "recharge_plans": {
-        "PLAN001": {
-            "plan_id": "PLAN001",
-            "plan_name": "28 days",
-            "validity_days": 28,
-            "price": 245.00,
-            "description": "7 days validity with unlimited calls"
-        },
-        "PLAN002": {
-            "plan_id": "PLAN002",
-            "plan_name": "14 Days Standard",
-            "validity_days": 14,
-            "price": 99.00,
-            "description": "14 days validity with 1GB daily data"
-        },
-        "PLAN003": {
-            "plan_id": "PLAN003",
-            "plan_name": "28 Days (1 Month) Premium",
-            "validity_days": 28,
-            "price": 199.00,
-            "description": "28 days validity with 2GB daily data + unlimited calls"
-        },
-        "PLAN004": {
-            "plan_id": "PLAN004",
-            "plan_name": "56 Days (2 Months) Super",
-            "validity_days": 56,
-            "price": 349.00,
-            "description": "56 days validity with 3GB daily data + unlimited calls and SMS"
-        },
-        "PLAN005": {
-            "plan_id": "PLAN005",
-            "plan_name": "84 Days (3 Months) Mega",
-            "validity_days": 84,
-            "price": 499.00,
-            "description": "84 days validity with 4GB daily data + unlimited calls, SMS and roaming"
-        },
-        "PLAN006": {
-            "plan_id": "PLAN006",
-            "plan_name": "365 Days (1 Year) Elite",
-            "validity_days": 365,
-            "price": 1999.00,
-            "description": "365 days validity with 5GB daily data + all benefits"
-        }
-    }
+  "PLAN_28_1": {
+    "plan_id": "PLAN_28_1",
+    "duration": "28 days",
+    "validity_days": 28,
+    "price": 249,
+    "data_per_day": "1.5GB/day"
+  },
+  "PLAN_28_2": {
+    "plan_id": "PLAN_28_2",
+    "duration": "28 days",
+    "validity_days": 28,
+    "price": 299,
+    "data_per_day": "2GB/day"
+  },
+
+  "PLAN_56_1": {
+    "plan_id": "PLAN_56_1",
+    "duration": "56 days",
+    "validity_days": 56,
+    "price": 512,
+    "data_per_day": "1.5GB/day"
+  },
+  "PLAN_56_2": {
+    "plan_id": "PLAN_56_2",
+    "duration": "56 days",
+    "validity_days": 56,
+    "price": 579,
+    "data_per_day": "2GB/day"
+  },
+
+  "PLAN_84_1": {
+    "plan_id": "PLAN_84_1",
+    "duration": "84 days",
+    "validity_days": 84,
+    "price": 749,
+    "data_per_day": "1.5GB/day"
+  },
+  "PLAN_84_2": {
+    "plan_id": "PLAN_84_2",
+    "duration": "84 days",
+    "validity_days": 84,
+    "price": 799,
+    "data_per_day": "2GB/day"
+  },
+
+  "PLAN_ANNUAL_1": {
+    "plan_id": "PLAN_ANNUAL_1",
+    "duration": "Annual",
+    "validity_days": 365,
+    "price": 2799,
+    "data_per_day": "1.5GB/day"
+  },
+  "PLAN_ANNUAL_2": {
+    "plan_id": "PLAN_ANNUAL_2",
+    "duration": "Annual",
+    "validity_days": 365,
+    "price": 3499,
+    "data_per_day": "2GB/day"
+  }
 }
+
+}   
