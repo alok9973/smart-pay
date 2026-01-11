@@ -563,13 +563,32 @@ def mobile_recharge(request: MobileRechargeRequest):
             "message": "Invalid phone number. Please enter a valid 10-digit number."
         }
 
-    # Get recharge plan
-    plan = walletdata["recharge_plans"].get(request.plan_id)
+    # Parse plan_display string to extract price
+    # Expected format: "₹249 1.5GB/day" or "249 1.5GB/day"
+    import re
+    price_match = re.search(r'₹?(\d+)', request.plan_display)
+    
+    if not price_match:
+        return {
+            "success": False,
+            "message": "Invalid plan format. Expected format: '₹249 1.5GB/day'"
+        }
+    
+    requested_price = float(price_match.group(1))
+    
+    # Find recharge plan by price and duration
+    plan = None
+    plan_id = None
+    for pid, p in walletdata["recharge_plans"].items():
+        if p["price"] == requested_price and p["duration"] == request.duration:
+            plan = p
+            plan_id = pid
+            break
 
     if not plan:
         return {
             "success": False,
-            "message": "Invalid plan selected.",
+            "message": f"No plan available for ₹{requested_price} with {request.duration} duration. Please select a valid plan.",
             "available_plans": list(walletdata["recharge_plans"].keys())
         }
 
@@ -602,7 +621,7 @@ def mobile_recharge(request: MobileRechargeRequest):
         "to_user": "RECHARGE_SERVICE",
         "description": f"Mobile recharge on {request.phone_number} - {plan['duration']}",
         "phone_number": request.phone_number,
-        "plan_id": request.plan_id,
+        "plan_id": plan_id,
         "validity_days": plan["validity_days"],
         "data_per_day": plan["data_per_day"],
         "timestamp": timestamp,
@@ -617,7 +636,7 @@ def mobile_recharge(request: MobileRechargeRequest):
         "celebration_message": "Great! Your mobile number has been recharged. Enjoy uninterrupted connectivity! 📱",
         "transaction_id": transaction_id,
         "phone_number": request.phone_number,
-        "plan_id": request.plan_id,
+        "plan_id": plan_id,
         "duration": plan["duration"],
         "plan_price": plan_price,
         "validity_days": plan["validity_days"],

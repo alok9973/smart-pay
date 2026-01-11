@@ -51,5 +51,6 @@ class GetTicketsRequest(BaseModel):
 class MobileRechargeRequest(BaseModel):
     user_id: str
     phone_number: str
-    plan_id: str
+    plan_display: str  # e.g., "₹249 1.5GB/day" or "249 1.5GB/day"
+    duration: str  # e.g., "28 days", "56 days", "84 days", "Annual"
 

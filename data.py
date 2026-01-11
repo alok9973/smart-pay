@@ -191,7 +191,7 @@ walletdata = {
 
   "PLAN_ANNUAL_1": {
     "plan_id": "PLAN_ANNUAL_1",
-    "duration": "Annual",
+    "duration": "annual plan",
     "validity_days": 365,
     "price": 2799,
     "data_per_day": "1.5GB/day"
