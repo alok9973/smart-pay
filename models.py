@@ -38,3 +38,14 @@ class GetTransactionHistoryResponse(BaseModel):
     mobile_number: str
     transactions: list
     total_balance: float
+
+class ReportIssueRequest(BaseModel):
+    user_id: str
+    issue_type: str  # e.g. "Money deducted but not credited"
+    description: Optional[str] = None
+
+
+class GetTicketsRequest(BaseModel):
+    user_id: str
+
+    

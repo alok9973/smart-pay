@@ -2,7 +2,8 @@ from fastapi import FastAPI, HTTPException
 from models import (
     AuthRequest, OTPVerifyRequest, WalletRequest, 
     TransactionHistoryRequest, LinkBankRequest, 
-    AddMoneyFromBankRequest, TransferMoneyRequest
+    AddMoneyFromBankRequest, TransferMoneyRequest,
+    GetTransactionHistoryResponse, ReportIssueRequest, GetTicketsRequest
 )
 from data import walletdata
 from datetime import datetime
@@ -472,3 +473,64 @@ def get_linked_banks(request: WalletRequest):
         "linked_banks": enriched_banks,
         "count": len(enriched_banks)
     }
+
+@app.post("/support/report-issue")
+def report_issue(request: ReportIssueRequest):
+    user = walletdata["users"].get(request.user_id)
+
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    if not user.get("is_authenticated"):
+        return {
+            "success": False,
+            "message": "Please authenticate first"
+        }
+
+    if "tickets" not in user:
+        user["tickets"] = []
+
+    ticket_id = f"TCK{uuid.uuid4().hex[:10].upper()}"
+
+    ticket = {
+        "ticket_id": ticket_id,
+        "issue_type": request.issue_type,
+        "description": request.description or "",
+        "status": "OPEN",
+        "created_at": get_current_timestamp()
+    }
+
+    user["tickets"].append(ticket)
+
+    return {
+        "success": True,
+        "message": "We are sorry for the inconvenience. Your ticket has been raised.",
+        "ticket_id": ticket_id
+    }
+
+@app.post("/support/my-tickets", response_class=PlainTextResponse)
+def get_my_tickets(request: GetTicketsRequest):
+    user = walletdata["users"].get(request.user_id)
+
+    if not user:
+        return "User not found."
+
+    if not user.get("is_authenticated"):
+        return "Please authenticate first to view your tickets."
+
+    tickets = user.get("tickets", [])
+
+    if not tickets:
+        return "You have not raised any tickets yet."
+
+    output = "Your Support Tickets:\n\n"
+
+    for i, t in enumerate(tickets, start=1):
+        output += (
+            f"{i}. Ticket ID: {t.get('ticket_id')}\n"
+            f"   Issue: {t.get('issue_type')}\n"
+            f"   Status: {t.get('status')}\n"
+            f"   Date: {t.get('created_at')}\n\n"
+        )
+
+    return output
