@@ -26,7 +26,7 @@ walletdata = {
             "is_authenticated": False,
             "wallet": {
                 "wallet_id": "W1001",
-                "balance": 204.00
+                "balance": 2004.00
             },
             "linked_banks": [
                 {
@@ -141,6 +141,50 @@ walletdata = {
             "ifsc_code": "ICIC0000789",
             "account_holder_name": "Test User",
             "balance": 25000.00
+        }
+    },
+    "recharge_plans": {
+        "PLAN001": {
+            "plan_id": "PLAN001",
+            "plan_name": "28 days",
+            "validity_days": 28,
+            "price": 245.00,
+            "description": "7 days validity with unlimited calls"
+        },
+        "PLAN002": {
+            "plan_id": "PLAN002",
+            "plan_name": "14 Days Standard",
+            "validity_days": 14,
+            "price": 99.00,
+            "description": "14 days validity with 1GB daily data"
+        },
+        "PLAN003": {
+            "plan_id": "PLAN003",
+            "plan_name": "28 Days (1 Month) Premium",
+            "validity_days": 28,
+            "price": 199.00,
+            "description": "28 days validity with 2GB daily data + unlimited calls"
+        },
+        "PLAN004": {
+            "plan_id": "PLAN004",
+            "plan_name": "56 Days (2 Months) Super",
+            "validity_days": 56,
+            "price": 349.00,
+            "description": "56 days validity with 3GB daily data + unlimited calls and SMS"
+        },
+        "PLAN005": {
+            "plan_id": "PLAN005",
+            "plan_name": "84 Days (3 Months) Mega",
+            "validity_days": 84,
+            "price": 499.00,
+            "description": "84 days validity with 4GB daily data + unlimited calls, SMS and roaming"
+        },
+        "PLAN006": {
+            "plan_id": "PLAN006",
+            "plan_name": "365 Days (1 Year) Elite",
+            "validity_days": 365,
+            "price": 1999.00,
+            "description": "365 days validity with 5GB daily data + all benefits"
         }
     }
 }

@@ -3,7 +3,8 @@ from models import (
     AuthRequest, OTPVerifyRequest, WalletRequest, 
     TransactionHistoryRequest, LinkBankRequest, 
     AddMoneyFromBankRequest, TransferMoneyRequest,
-    GetTransactionHistoryResponse, ReportIssueRequest, GetTicketsRequest
+    GetTransactionHistoryResponse, ReportIssueRequest, GetTicketsRequest,
+    MobileRechargeRequest
 )
 from data import walletdata
 from datetime import datetime
@@ -534,3 +535,114 @@ def get_my_tickets(request: GetTicketsRequest):
         )
 
     return output
+
+
+# --------------------------
+# MOBILE RECHARGE
+# --------------------------
+@app.post("/mobile/recharge")
+def mobile_recharge(request: MobileRechargeRequest):
+    user = walletdata["users"].get(request.user_id)
+
+    if not user:
+        return {
+            "success": False,
+            "message": "User not found."
+        }
+
+    if not user.get("is_authenticated"):
+        return {
+            "success": False,
+            "message": "Please authenticate first to recharge."
+        }
+
+    # Validate phone number
+    if not check_valid_mobile_number(request.phone_number):
+        return {
+            "success": False,
+            "message": "Invalid phone number. Please enter a valid 10-digit number."
+        }
+
+    # Get recharge plan
+    plan = walletdata["recharge_plans"].get(request.plan_id)
+
+    if not plan:
+        return {
+            "success": False,
+            "message": "Invalid plan selected.",
+            "available_plans": list(walletdata["recharge_plans"].keys())
+        }
+
+    # Check wallet balance
+    wallet_balance = user["wallet"]["balance"]
+    plan_price = plan["price"]
+
+    if wallet_balance < plan_price:
+        return {
+            "success": False,
+            "message": f"Insufficient balance. Your balance: ₹{wallet_balance}, Plan cost: ₹{plan_price}"
+        }
+
+    # Process recharge
+    transaction_id = generate_transaction_id()
+    timestamp = get_current_timestamp()
+
+    # Deduct from wallet
+    user["wallet"]["balance"] -= plan_price
+
+    # Record transaction
+    if "transactions" not in user:
+        user["transactions"] = []
+
+    recharge_transaction = {
+        "transaction_id": transaction_id,
+        "type": "DEBIT",
+        "amount": plan_price,
+        "from_user": request.user_id,
+        "to_user": "RECHARGE_SERVICE",
+        "description": f"Mobile recharge on {request.phone_number} - {plan['plan_name']}",
+        "phone_number": request.phone_number,
+        "plan_id": request.plan_id,
+        "validity_days": plan["validity_days"],
+        "timestamp": timestamp,
+        "status": "SUCCESS"
+    }
+
+    user["transactions"].append(recharge_transaction)
+
+    return {
+        "success": True,
+        "message": f"🎉 Congratulations! Your mobile recharge of ₹{plan_price} has been successfully completed! Your {plan['plan_name']} plan is now active for {plan['validity_days']} days.",
+        "celebration_message": "Great! Your mobile number has been recharged. Enjoy uninterrupted connectivity! 📱",
+        "transaction_id": transaction_id,
+        "phone_number": request.phone_number,
+        "plan_name": plan["plan_name"],
+        "plan_price": plan_price,
+        "validity_days": plan["validity_days"],
+        "plan_description": plan["description"],
+        "new_balance": user["wallet"]["balance"],
+        "timestamp": timestamp
+    }
+
+
+# --------------------------
+# MOBILE RECHARGE: Get Available Plans
+# --------------------------
+@app.get("/mobile/recharge-plans")
+def get_recharge_plans():
+    plans = []
+    for plan_id, plan in walletdata["recharge_plans"].items():
+        plans.append({
+            "plan_id": plan_id,
+            "plan_name": plan["plan_name"],
+            "price": plan["price"],
+            "validity_days": plan["validity_days"],
+            "description": plan["description"]
+        })
+
+    return {
+        "success": True,
+        "total_plans": len(plans),
+        "plans": plans
+    }
+

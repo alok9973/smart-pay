@@ -48,4 +48,8 @@ class ReportIssueRequest(BaseModel):
 class GetTicketsRequest(BaseModel):
     user_id: str
 
-    
+class MobileRechargeRequest(BaseModel):
+    user_id: str
+    phone_number: str
+    plan_id: str
+
