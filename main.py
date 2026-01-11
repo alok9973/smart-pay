@@ -9,6 +9,8 @@ from datetime import datetime
 import uuid
 from pydantic import BaseModel
 from typing import List, Optional
+from fastapi.responses import PlainTextResponse
+from datetime import datetime
 
 app = FastAPI(title="SmartPay Agent API")
 
@@ -103,24 +105,50 @@ def check_balance(request: WalletRequest):
 # --------------------------
 # TRANSACTION HISTORY: Get transactions for a user
 # --------------------------
-@app.post("/transaction-history")
+
+@app.post("/transaction-history", response_class=PlainTextResponse)
 def get_transaction_history(request: TransactionHistoryRequest):
-    """Get all transactions for authenticated user"""
     user = walletdata["users"].get(request.user_id)
 
     if not user:
-        raise HTTPException(status_code=404, detail="User not found")
+        return "User not found."
 
-    if not user["is_authenticated"]:
-        return {
-            "success": False,
-            "message": "Please authenticate first"
-        }
+    if not user.get("is_authenticated"):
+        return "Please authenticate first to view your transaction history."
 
-    # Get transactions directly from user data
     transactions = user.get("transactions", [])
 
-    return transactions
+    if not transactions:
+        return "You have no transactions yet."
+
+    output = "Your Transaction History:\n\n"
+
+    for i, txn in enumerate(transactions, start=1):
+        txn_id = txn.get("transaction_id", "N/A")
+        txn_type = txn.get("type", "Unknown")
+        amount = txn.get("amount", "N/A")
+        status = txn.get("status", "Unknown")
+
+        ts = txn.get("timestamp")
+        if ts:
+            try:
+                dt = datetime.fromisoformat(ts)
+                date_str = dt.strftime("%d %b %Y, %I:%M %p")
+            except Exception:
+                date_str = ts
+        else:
+            date_str = "Unknown date"
+
+        output += (
+            f"{i}. Transaction ID: {txn_id}\n"
+            f"   {txn_type} of Rs. {amount} - {status}\n"
+            f"   Date: {date_str}\n\n"
+        )
+
+    return output
+
+
+
 
 
 # --------------------------
