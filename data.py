@@ -204,5 +204,4 @@ walletdata = {
     "data_per_day": "2GB/day"
   }
 }
-
 }   
