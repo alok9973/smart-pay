@@ -21,7 +21,7 @@ jobs:
       - name: Run demo check
         run: |
           echo "Running demo CI check..."
-          # exit 1   # ❌ fail (change to exit 0 to simulate success)
+          exit 1   # ❌ fail (change to exit 0 to simulate success)
 
   label-on-result:
     needs: demo-ci
