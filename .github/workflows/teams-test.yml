@@ -1,19 +1,14 @@
-name: Teams Webhook Test
+name: Schedule Test
 
 on:
   workflow_dispatch:
   schedule:
-    - cron: "35 13 * * *"   # 7:05 PM IST daily
+    - cron: "25 8 * * *"   # 1:55 PM IST daily
 
 jobs:
-  notify:
+  test:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Send Teams message
-        run: |
-          MSG="🚀 Teams webhook working | Repo: ${{ github.repository }} | Trigger: ${{ github.event_name }}"
-          curl -X POST \
-            -H "Content-Type: application/json" \
-            -d "{\"text\":\"$MSG\"}" \
-            "${{ secrets.TEAMS_WEBHOOK_URL }}"
+      - name: Print message
+        run: echo "Workflow triggered at $(date) by ${{ github.event_name }}"
