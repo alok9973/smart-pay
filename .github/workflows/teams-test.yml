@@ -3,7 +3,7 @@ name: Teams Webhook Test
 on:
   workflow_dispatch:
   schedule:
-    - cron: "*/5 * * * *"
+    - cron: "35 13 * * *"   # 7:05 PM IST daily
 
 jobs:
   notify:
