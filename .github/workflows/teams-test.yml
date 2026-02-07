@@ -1,26 +1,24 @@
 name: Teams Webhook Test
 
 on:
-  workflow_dispatch:   # manual run button
+  workflow_dispatch:
   schedule:
-    - cron: "*/5 * * * *"   # every 5 min (testing only)
+    - cron: "*/5 * * * *"
 
 jobs:
   notify:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Show trigger
-        run: echo "Triggered by ${{ github.event_name }}"
-
       - name: Send Teams message
         run: |
+          payload=$(cat <<EOF
+          {
+            "text": "🚀 Teams Webhook Test SUCCESS\nRepository: ${{ github.repository }}\nTrigger: ${{ github.event_name }}\nRun: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          }
+          EOF
+          )
+
           curl -H "Content-Type: application/json" \
-          -d "{
-            \"text\": \"🚀 Teams Webhook Test SUCCESS
-Repository: ${{ github.repository }}
-Trigger: ${{ github.event_name }}
-Time: $(date)
-Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}\"
-          }" \
-          "${{ secrets.TEAMS_WEBHOOK_URL }}"
+               -d "$payload" \
+               "${{ secrets.TEAMS_WEBHOOK_URL }}"
