@@ -12,13 +12,8 @@ jobs:
     steps:
       - name: Send Teams message
         run: |
-          payload=$(cat <<EOF
-          {
-            "text": "🚀 Teams Webhook Test SUCCESS\nRepository: ${{ github.repository }}\nTrigger: ${{ github.event_name }}\nRun: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-          }
-          EOF
-          )
-
-          curl -H "Content-Type: application/json" \
-               -d "$payload" \
-               "${{ secrets.TEAMS_WEBHOOK_URL }}"
+          MSG="🚀 Teams webhook working | Repo: ${{ github.repository }} | Trigger: ${{ github.event_name }}"
+          curl -X POST \
+            -H "Content-Type: application/json" \
+            -d "{\"text\":\"$MSG\"}" \
+            "${{ secrets.TEAMS_WEBHOOK_URL }}"
